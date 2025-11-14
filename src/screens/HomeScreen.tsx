@@ -114,20 +114,28 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             {userProfile?.name || 'User'}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Settings')}
-          style={styles.profileButton}
-        >
-          {userProfile?.photoURL ? (
-            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.avatarText, { color: colors.background }]}>
-                {userProfile.name.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          ) : (
-            <Icon name="account-circle" size={40} color={colors.primary} />
-          )}
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Statistics')}
+            style={styles.statsButton}
+          >
+            <Icon name="bar-chart" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Settings')}
+            style={styles.profileButton}
+          >
+            {userProfile?.photoURL ? (
+              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.avatarText, { color: colors.background }]}>
+                  {userProfile.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            ) : (
+              <Icon name="account-circle" size={40} color={colors.primary} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -227,6 +235,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         }
         contentContainerStyle={
           filteredAndSortedTasks.length === 0 ? { flex: 1 } : { paddingBottom: 80 }
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -270,6 +279,14 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statsButton: {
+    padding: 8,
   },
   profileButton: {
     padding: 4,

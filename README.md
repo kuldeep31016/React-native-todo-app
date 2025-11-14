@@ -1,97 +1,308 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native TODO Application
 
-# Getting Started
+A feature-rich TODO application built with React Native CLI, Firebase, and Google Sign-In authentication. Optimized for Android with a modern, clean UI/UX and smooth animations.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+### 🔐 Authentication
+- Google Sign-In integration
+- Session persistence
+- User profile management
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### ✅ Task Management
+- **Create Tasks**: Title, description, due date, priority, and category
+- **Read Tasks**: Beautiful card-based list view with filtering and sorting
+- **Update Tasks**: Edit any task field, mark as complete/incomplete
+- **Delete Tasks**: Swipe to delete with confirmation
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### 🎯 Advanced Features
+- **Task Categories**: Personal, Work, Shopping, Health, and custom categories
+- **Priority Levels**: High, Medium, Low with color coding
+- **Filtering**: All, Active, Completed, Overdue
+- **Sorting**: By due date, priority, created date, or alphabetical
+- **Search**: Real-time task search
+- **Due Date Management**: Date and time pickers with visual indicators
+- **Statistics Dashboard**: Task completion rates, category breakdown, priority analysis
+- **Dark Mode**: System-based or manual theme toggle
+- **Offline Support**: Local storage with Firebase sync
 
-```sh
-# Using npm
-npm start
+### 🎨 UI/UX
+- Modern, clean design
+- Smooth animations with React Native Reanimated
+- Pull-to-refresh functionality
+- Empty states with helpful messages
+- Toast notifications
+- Loading states
+- Error handling
 
-# OR using Yarn
-yarn start
-```
+## Technical Stack
 
-## Step 2: Build and run your app
+- **Framework**: React Native CLI 0.82.1
+- **Language**: TypeScript
+- **Backend**: Firebase (Firestore, Authentication)
+- **Authentication**: Google Sign-In
+- **State Management**: React Context API
+- **Navigation**: React Navigation v7
+- **UI Components**: Custom components with React Native Paper styling
+- **Icons**: React Native Vector Icons
+- **Animations**: React Native Reanimated
+- **Storage**: AsyncStorage for offline support
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Prerequisites
+
+- Node.js >= 20
+- React Native development environment set up
+- Android Studio and Android SDK
+- Firebase project with Authentication and Firestore enabled
+- Google Sign-In configured in Firebase Console
+
+## Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/kuldeep31016/React-native-todo-app.git
+   cd React-native-todo-app
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Firebase Setup**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Authentication and select Google Sign-In method
+   - Create a Firestore database
+   - Add an Android app to your Firebase project
+   - Download `google-services.json` from Firebase Console
+   - Place `google-services.json` in `android/app/` directory
+   - Get your Web Client ID from Firebase Console > Authentication > Sign-in method > Google
+   - Update `src/services/auth.ts` with your Web Client ID:
+     ```typescript
+     GoogleSignin.configure({
+       webClientId: 'YOUR_WEB_CLIENT_ID_HERE',
+       offlineAccess: true,
+     });
+     ```
+
+4. **Firestore Security Rules**
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /tasks/{taskId} {
+         allow read, write: if request.auth != null && request.resource.data.userId == request.auth.uid;
+       }
+       match /users/{userId} {
+         allow read, write: if request.auth != null && request.auth.uid == userId;
+       }
+       match /categories/{categoryId} {
+         allow read, write: if request.auth != null && request.resource.data.userId == request.auth.uid;
+       }
+     }
+   }
+   ```
+
+## Running the App
 
 ### Android
 
-```sh
-# Using npm
-npm run android
+1. **Start Metro bundler**
+   ```bash
+   npm start
+   ```
 
-# OR using Yarn
-yarn android
+2. **Run on Android device/emulator**
+   ```bash
+   npm run android
+   ```
+
+   Or use Android Studio to build and run the app.
+
+## Building APK
+
+### Debug APK
+
+```bash
+cd android
+./gradlew assembleDebug
 ```
 
-### iOS
+The APK will be located at: `android/app/build/outputs/apk/debug/app-debug.apk`
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### Release APK (Signed)
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+1. **Generate a signing key** (one-time setup)
+   ```bash
+   keytool -genkeypair -v -storetype PKCS12 -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+   ```
 
-```sh
-bundle install
+2. **Configure signing in `android/app/build.gradle`**
+   ```gradle
+   android {
+       ...
+       signingConfigs {
+           release {
+               storeFile file('my-release-key.keystore')
+               storePassword 'YOUR_STORE_PASSWORD'
+               keyAlias 'my-key-alias'
+               keyPassword 'YOUR_KEY_PASSWORD'
+           }
+       }
+       buildTypes {
+           release {
+               signingConfig signingConfigs.release
+               ...
+           }
+       }
+   }
+   ```
+
+3. **Build release APK**
+   ```bash
+   cd android
+   ./gradlew assembleRelease
+   ```
+
+   The APK will be located at: `android/app/build/outputs/apk/release/app-release.apk`
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── common/          # Reusable components (LoadingSpinner, EmptyState)
+│   ├── task/            # Task-related components (TaskCard)
+│   └── auth/            # Auth-related components
+├── screens/
+│   ├── AuthScreen.tsx
+│   ├── HomeScreen.tsx
+│   ├── AddTaskScreen.tsx
+│   ├── TaskDetailScreen.tsx
+│   ├── SettingsScreen.tsx
+│   └── StatisticsScreen.tsx
+├── navigation/
+│   └── AppNavigator.tsx
+├── services/
+│   ├── firebase.ts
+│   ├── auth.ts
+│   └── firestore.ts
+├── context/
+│   ├── AuthContext.tsx
+│   ├── TaskContext.tsx
+│   └── ThemeContext.tsx
+├── utils/
+│   ├── helpers.ts
+│   └── constants.ts
+└── theme/
+    └── colors.ts
 ```
 
-Then, and every time you update your native dependencies, run:
+## Firebase Data Structure
 
-```sh
-bundle exec pod install
+### Tasks Collection
+```
+tasks/
+  {taskId}/
+    userId: string
+    title: string
+    description: string
+    completed: boolean
+    priority: 'high' | 'medium' | 'low'
+    category: string
+    dueDate: timestamp (optional)
+    createdAt: timestamp
+    updatedAt: timestamp
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+### Users Collection
+```
+users/
+  {userId}/
+    profile: {
+      name: string
+      email: string
+      photoURL: string (optional)
+      createdAt: timestamp
+    }
+    settings: {
+      theme: 'light' | 'dark' | 'system'
+      notifications: boolean
+    }
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Categories Collection
+```
+categories/
+  {categoryId}/
+    userId: string
+    name: string
+    color: string
+    icon: string (optional)
+```
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## Features in Detail
 
-## Step 3: Modify your app
+### Task Filtering
+- **All**: Shows all tasks
+- **Active**: Shows only incomplete tasks
+- **Completed**: Shows only completed tasks
+- **Overdue**: Shows incomplete tasks past their due date
 
-Now that you have successfully run the app, let's make changes!
+### Task Sorting
+- **Due Date**: Sorted by due date (earliest first)
+- **Priority**: Sorted by priority (high to low)
+- **Created Date**: Sorted by creation time (newest first)
+- **Alphabetical**: Sorted by title (A-Z)
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Priority System
+- **High** (Red): Urgent tasks requiring immediate attention
+- **Medium** (Orange): Important tasks
+- **Low** (Green): Regular tasks
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+### Dark Mode
+- System-based theme detection
+- Manual toggle in settings
+- Smooth theme transitions
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+### Offline Support
+- Tasks are cached locally using AsyncStorage
+- Automatic sync when connection is restored
+- Offline indicator (can be added)
 
-## Congratulations! :tada:
+## Troubleshooting
 
-You've successfully run and modified your React Native App. :partying_face:
+### Google Sign-In Issues
+- Ensure `google-services.json` is in `android/app/` directory
+- Verify Web Client ID is correctly configured
+- Check that Google Sign-In is enabled in Firebase Console
 
-### Now what?
+### Build Issues
+- Clean build: `cd android && ./gradlew clean`
+- Clear Metro cache: `npm start -- --reset-cache`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+### Firebase Connection Issues
+- Verify Firestore rules are correctly set
+- Check network connectivity
+- Ensure Firebase project is active
 
-# Troubleshooting
+## Contributing
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-# Learn More
+## License
 
-To learn more about React Native, take a look at the following resources:
+This project is open source and available under the MIT License.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## Author
+
+Built with ❤️ by Kuldeep Raj
+
+## Support
+
+For issues and questions, please open an issue on GitHub.
+
+---
+
+**Note**: Remember to add your `google-services.json` file and configure your Web Client ID before running the app. Do not commit sensitive files to version control.
