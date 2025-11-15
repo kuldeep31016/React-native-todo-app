@@ -94,14 +94,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             >
               {task.title}
             </Text>
-            {task.description && (
-              <Text
-                style={[styles.description, { color: colors.textSecondary }]}
-                numberOfLines={2}
-              >
-                {task.description}
-              </Text>
-            )}
             <View style={styles.metaContainer}>
               {task.dueDate && (
                 <View style={styles.metaItem}>
@@ -177,6 +169,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    minHeight: 85,
   },
   content: {
     flexDirection: 'row',
@@ -198,11 +191,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 4,
-  },
-  description: {
-    fontSize: 14,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   metaContainer: {
     flexDirection: 'row',

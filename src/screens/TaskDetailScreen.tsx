@@ -86,112 +86,160 @@ export const TaskDetailScreen: React.FC<TaskDetailScreenProps> = ({
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: '#F5F5F5' }]}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={[
-              styles.checkbox,
-              {
-                backgroundColor: task.completed ? colors.success : 'transparent',
-                borderColor: task.completed ? colors.success : colors.border,
-              },
-            ]}
-            onPress={handleToggleComplete}
-          >
-            {task.completed && (
-              <Icon name="check" size={24} color={colors.background} />
-            )}
-          </TouchableOpacity>
-          <View style={styles.headerText}>
-            <Text
+        {/* Header Card */}
+        <View style={[styles.headerCard, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={styles.header}>
+            <TouchableOpacity
               style={[
-                styles.title,
+                styles.checkbox,
                 {
-                  color: colors.text,
-                  textDecorationLine: task.completed ? 'line-through' : 'none',
+                  backgroundColor: task.completed ? colors.success : 'transparent',
+                  borderColor: task.completed ? colors.success : colors.border,
                 },
               ]}
+              onPress={handleToggleComplete}
             >
-              {task.title}
-            </Text>
-            <View style={styles.priorityBadge}>
-              <View
-                style={[
-                  styles.priorityDot,
-                  { backgroundColor: getPriorityColor() },
-                ]}
-              />
+              {task.completed && (
+                <Icon name="check" size={28} color={colors.background} />
+              )}
+            </TouchableOpacity>
+            <View style={styles.headerText}>
               <Text
                 style={[
-                  styles.priorityText,
-                  { color: getPriorityColor() },
+                  styles.title,
+                  {
+                    color: colors.text,
+                    textDecorationLine: task.completed ? 'line-through' : 'none',
+                  },
                 ]}
               >
-                {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                {task.title}
               </Text>
+              <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor() + '15' }]}>
+                <View
+                  style={[
+                    styles.priorityDot,
+                    { backgroundColor: getPriorityColor() },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.priorityText,
+                    { color: getPriorityColor() },
+                  ]}
+                >
+                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                </Text>
+              </View>
+              <View style={[styles.statusBadge, { backgroundColor: task.completed ? colors.success + '15' : '#E3F2FD' }]}>
+                <Icon 
+                  name={task.completed ? 'check-circle' : 'radio-button-unchecked'} 
+                  size={16} 
+                  color={task.completed ? colors.success : colors.textSecondary} 
+                />
+                <Text style={[styles.statusText, { color: task.completed ? colors.success : colors.textSecondary }]}>
+                  {task.completed ? 'Completed' : 'In Progress'}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* Description */}
-        {task.description && (
-          <View style={styles.section}>
+        {/* Description Card */}
+        <View style={[styles.sectionCard, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Icon name="description" size={24} color={colors.primary} />
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               Description
             </Text>
-            <Text style={[styles.description, { color: colors.textSecondary }]}>
-              {task.description}
-            </Text>
           </View>
-        )}
+          <View style={[styles.descriptionContainer, { backgroundColor: '#FAFAFA' }]}>
+            {task.description ? (
+              <Text style={[styles.description, { color: colors.text }]}>
+                {task.description}
+              </Text>
+            ) : (
+              <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
+                No description provided for this task.
+              </Text>
+            )}
+          </View>
+        </View>
 
-        {/* Details */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Details</Text>
+        {/* Details Card */}
+        <View style={[styles.sectionCard, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Icon name="info" size={24} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Task Details</Text>
+          </View>
           
-          <View style={styles.detailRow}>
-            <Icon name="folder" size={20} color={colors.textSecondary} />
-            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-              Category:
-            </Text>
-            <Text style={[styles.detailValue, { color: colors.text }]}>
-              {task.category}
-            </Text>
+          <View style={[styles.detailCard, { backgroundColor: '#FAFAFA' }]}>
+            <View style={styles.detailRow}>
+              <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+                <Icon name="folder" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.detailContent}>
+                <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                  Category
+                </Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>
+                  {task.category}
+                </Text>
+              </View>
+            </View>
           </View>
 
           {task.dueDate && (
-            <View style={styles.detailRow}>
-              <Icon name="event" size={20} color={getDueDateStyle().color} />
-              <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-                Due Date:
-              </Text>
-              <Text style={[styles.detailValue, getDueDateStyle()]}>
-                {formatDate(task.dueDate)}
-                {isOverdue(task.dueDate) && ' (Overdue)'}
-              </Text>
+            <View style={[styles.detailCard, { backgroundColor: '#FAFAFA' }]}>
+              <View style={styles.detailRow}>
+                <View style={[styles.iconContainer, { backgroundColor: getDueDateStyle().color + '15' }]}>
+                  <Icon name="event" size={22} color={getDueDateStyle().color} />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                    Due Date
+                  </Text>
+                  <Text style={[styles.detailValue, getDueDateStyle()]}>
+                    {formatDate(task.dueDate)}
+                    {isOverdue(task.dueDate) && ' (Overdue)'}
+                  </Text>
+                </View>
+              </View>
             </View>
           )}
 
-          <View style={styles.detailRow}>
-            <Icon name="schedule" size={20} color={colors.textSecondary} />
-            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-              Created:
-            </Text>
-            <Text style={[styles.detailValue, { color: colors.text }]}>
-              {formatDate(task.createdAt)}
-            </Text>
+          <View style={[styles.detailCard, { backgroundColor: '#FAFAFA' }]}>
+            <View style={styles.detailRow}>
+              <View style={[styles.iconContainer, { backgroundColor: colors.textSecondary + '15' }]}>
+                <Icon name="schedule" size={22} color={colors.textSecondary} />
+              </View>
+              <View style={styles.detailContent}>
+                <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                  Created
+                </Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>
+                  {formatDate(task.createdAt)}
+                </Text>
+              </View>
+            </View>
           </View>
 
-          <View style={styles.detailRow}>
-            <Icon name="update" size={20} color={colors.textSecondary} />
-            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-              Last Updated:
-            </Text>
-            <Text style={[styles.detailValue, { color: colors.text }]}>
-              {formatDate(task.updatedAt)}
-            </Text>
+          <View style={[styles.detailCard, { backgroundColor: '#FAFAFA' }]}>
+            <View style={styles.detailRow}>
+              <View style={[styles.iconContainer, { backgroundColor: colors.textSecondary + '15' }]}>
+                <Icon name="update" size={22} color={colors.textSecondary} />
+              </View>
+              <View style={styles.detailContent}>
+                <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                  Last Updated
+                </Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>
+                  {formatDate(task.updatedAt)}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -229,71 +277,142 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 100,
+  },
+  headerCard: {
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 24,
-    gap: 16,
+    gap: 18,
   },
   checkbox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 2,
   },
   headerText: {
     flex: 1,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 14,
+    letterSpacing: 0.3,
   },
   priorityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginBottom: 10,
   },
   priorityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   priorityText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  statusText: {
     fontSize: 14,
     fontWeight: '600',
   },
-  section: {
-    marginBottom: 24,
+  sectionCard: {
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 18,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  descriptionContainer: {
+    borderRadius: 16,
+    padding: 18,
+    minHeight: 120,
   },
   description: {
-    fontSize: 16,
+    fontSize: 17,
+    lineHeight: 28,
+    letterSpacing: 0.2,
+  },
+  placeholderText: {
+    fontSize: 15,
+    fontStyle: 'italic',
     lineHeight: 24,
+  },
+  detailCard: {
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
+    gap: 16,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailContent: {
+    flex: 1,
   },
   detailLabel: {
-    fontSize: 14,
-    minWidth: 80,
+    fontSize: 13,
+    marginBottom: 4,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
