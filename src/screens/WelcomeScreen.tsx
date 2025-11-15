@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useWelcome } from '../context/WelcomeContext';
@@ -21,6 +22,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const { markWelcomeAsSeen } = useWelcome();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     Animated.parallel([
@@ -38,21 +40,38 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   }, []);
 
   const handleGetStarted = async () => {
-    await markWelcomeAsSeen();
-    navigation.replace('Landing');
+    if (isNavigating) return; // Prevent multiple taps
+    
+    try {
+      setIsNavigating(true);
+      await markWelcomeAsSeen();
+      
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        if (navigation && navigation.replace) {
+          navigation.replace('Landing');
+        } else if (navigation && navigation.navigate) {
+          navigation.navigate('Landing');
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error in handleGetStarted:', error);
+      Alert.alert('Error', 'Unable to proceed. Please try again.');
+      setIsNavigating(false);
+    }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: '#2196F3' }]}>
       {/* Gradient-like background using multiple Views */}
-      <View style={styles.backgroundContainer}>
+      <View style={styles.backgroundContainer} pointerEvents="none">
         <View style={[styles.gradientLayer, { backgroundColor: '#0D47A1' }]} />
         <View style={[styles.gradientLayer, { backgroundColor: '#1976D2' }]} />
         <View style={[styles.gradientLayer, { backgroundColor: '#2196F3' }]} />
       </View>
 
       {/* Decorative Spheres */}
-      <View style={styles.sphereContainer}>
+      <View style={styles.sphereContainer} pointerEvents="none">
         <View style={[styles.sphere, styles.sphere1, { backgroundColor: '#64B5F6' }]} />
         <View style={[styles.sphere, styles.sphere2, { backgroundColor: '#FFFFFF' }]} />
         <View style={[styles.sphere, styles.sphere3, { backgroundColor: '#90CAF9' }]} />
@@ -69,6 +88,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
             transform: [{ translateY: slideAnim }],
           },
         ]}
+        pointerEvents="none"
       >
         <View style={styles.textContainer}>
           <Text style={styles.welcomeText}>Welcome Back!</Text>
@@ -88,12 +108,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
             transform: [{ translateY: slideAnim }],
           },
         ]}
+        pointerEvents="box-none"
       >
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, styles.signInButton, { borderColor: colors.primary }]}
             onPress={handleGetStarted}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            disabled={isNavigating}
           >
             <Text style={[styles.buttonText, { color: colors.primary }]}>Sign in</Text>
           </TouchableOpacity>
@@ -101,7 +123,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={[styles.button, styles.signUpButton, { backgroundColor: colors.primary }]}
             onPress={handleGetStarted}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            disabled={isNavigating}
           >
             <Text style={[styles.buttonText, styles.signUpButtonText, { color: colors.background }]}>
               Sign up
@@ -210,6 +233,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
+    zIndex: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -221,6 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 50,
   },
   signInButton: {
     backgroundColor: 'transparent',
