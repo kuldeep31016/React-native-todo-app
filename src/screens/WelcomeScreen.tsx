@@ -7,12 +7,10 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../context/ThemeContext';
 import { useWelcome } from '../context/WelcomeContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 interface WelcomeScreenProps {
   navigation: any;
@@ -45,48 +43,40 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Animated Background with Gradient */}
-      <LinearGradient
-        colors={['#2196F3', '#1976D2', '#0D47A1']}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <View style={[styles.container, { backgroundColor: '#2196F3' }]}>
+      {/* Gradient-like background using multiple Views */}
+      <View style={styles.backgroundContainer}>
+        <View style={[styles.gradientLayer, { backgroundColor: '#0D47A1' }]} />
+        <View style={[styles.gradientLayer, { backgroundColor: '#1976D2' }]} />
+        <View style={[styles.gradientLayer, { backgroundColor: '#2196F3' }]} />
+      </View>
+
+      {/* Decorative Spheres */}
+      <View style={styles.sphereContainer}>
+        <View style={[styles.sphere, styles.sphere1, { backgroundColor: '#64B5F6' }]} />
+        <View style={[styles.sphere, styles.sphere2, { backgroundColor: '#FFFFFF' }]} />
+        <View style={[styles.sphere, styles.sphere3, { backgroundColor: '#90CAF9' }]} />
+        <View style={[styles.sphere, styles.sphere4, { backgroundColor: '#BBDEFB' }]} />
+        <View style={[styles.sphere, styles.sphere5, { backgroundColor: '#E3F2FD' }]} />
+      </View>
+
+      {/* Content */}
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
       >
-        {/* Decorative 3D Spheres */}
-        <View style={styles.sphereContainer}>
-          <View style={[styles.sphere, styles.sphere1]} />
-          <View style={[styles.sphere, styles.sphere2]} />
-          <View style={[styles.sphere, styles.sphere3]} />
-          <View style={[styles.sphere, styles.sphere4]} />
-          <View style={[styles.sphere, styles.sphere5]} />
+        <View style={styles.textContainer}>
+          <Text style={styles.welcomeText}>Welcome Back!</Text>
+          <Text style={styles.subtitleText}>
+            Enter personal details to your employee account
+          </Text>
         </View>
-
-        {/* Wavy Background Shapes */}
-        <View style={styles.waveContainer}>
-          <View style={[styles.wave, styles.wave1]} />
-          <View style={[styles.wave, styles.wave2]} />
-          <View style={[styles.wave, styles.wave3]} />
-        </View>
-
-        {/* Content */}
-        <Animated.View
-          style={[
-            styles.content,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.textContainer}>
-            <Text style={styles.welcomeText}>Welcome Back!</Text>
-            <Text style={styles.subtitleText}>
-              Enter personal details to your employee account
-            </Text>
-          </View>
-        </Animated.View>
-      </LinearGradient>
+      </Animated.View>
 
       {/* Bottom Card with Buttons */}
       <Animated.View
@@ -126,12 +116,22 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     position: 'relative',
+  },
+  backgroundContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  gradientLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
   },
   sphereContainer: {
     position: 'absolute',
@@ -146,65 +146,32 @@ const styles = StyleSheet.create({
   sphere1: {
     width: 120,
     height: 120,
-    backgroundColor: '#64B5F6',
     top: '10%',
     left: '10%',
   },
   sphere2: {
     width: 80,
     height: 80,
-    backgroundColor: '#FFFFFF',
     top: '20%',
     right: '15%',
   },
   sphere3: {
     width: 100,
     height: 100,
-    backgroundColor: '#90CAF9',
     bottom: '30%',
     left: '20%',
   },
   sphere4: {
     width: 60,
     height: 60,
-    backgroundColor: '#BBDEFB',
     bottom: '20%',
     right: '10%',
   },
   sphere5: {
     width: 90,
     height: 90,
-    backgroundColor: '#E3F2FD',
     top: '50%',
     right: '30%',
-  },
-  waveContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  wave: {
-    position: 'absolute',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 200,
-  },
-  wave1: {
-    width: width * 1.5,
-    height: width * 1.5,
-    top: -width * 0.5,
-    left: -width * 0.3,
-  },
-  wave2: {
-    width: width * 1.2,
-    height: width * 1.2,
-    bottom: -width * 0.4,
-    right: -width * 0.2,
-  },
-  wave3: {
-    width: width * 0.8,
-    height: width * 0.8,
-    top: '40%',
-    left: -width * 0.2,
   },
   content: {
     flex: 1,
