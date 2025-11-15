@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, getCurrentUser, onAuthStateChanged } from '../services/auth';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, onAuthStateChanged } from '../services/auth';
 import { createUserProfile, getUserProfile } from '../services/firestore';
 import { UserProfile } from '../services/firestore';
 import { syncLocalTasksToFirebase } from '../utils/syncManager';
@@ -79,7 +79,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (result && result.user) {
         // Wait a bit for Firebase to update
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise<void>((resolve) => {
+          setTimeout(() => resolve(), 500);
+        });
         
         // Check if profile exists, if not create it
         let profile = await getUserProfile(result.user.uid);
@@ -138,7 +140,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (result && result.user) {
         // Wait a bit for Firebase to update
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise<void>((resolve) => {
+          setTimeout(() => resolve(), 500);
+        });
         
         // Create profile for new user
         const newProfile: any = {
@@ -177,14 +181,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const handleSignOut = async () => {
+    // Always clear local state first (synchronous, no errors possible)
+    setUser(null);
+    setUserProfile(null);
+    setIsLocalMode(true);
+    
+    // Then sign out from services (non-blocking)
     try {
       await signOut();
-      setUser(null);
-      setUserProfile(null);
-      setIsLocalMode(true);
     } catch (error) {
-      console.error('Sign out error:', error);
-      throw error;
+      // Log but don't throw - state is already cleared
+      console.log('Sign out service completed (local state cleared):', error);
     }
   };
 

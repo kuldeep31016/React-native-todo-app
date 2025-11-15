@@ -6,6 +6,7 @@ const WELCOME_SHOWN_KEY = '@welcome_shown';
 interface WelcomeContextType {
   hasSeenWelcome: boolean | null;
   markWelcomeAsSeen: () => Promise<void>;
+  resetWelcome: () => Promise<void>;
 }
 
 const WelcomeContext = createContext<WelcomeContextType | undefined>(undefined);
@@ -36,11 +37,21 @@ export const WelcomeProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const resetWelcome = async () => {
+    try {
+      await AsyncStorage.removeItem(WELCOME_SHOWN_KEY);
+      setHasSeenWelcome(false);
+    } catch (error) {
+      console.error('Error resetting welcome:', error);
+    }
+  };
+
   return (
     <WelcomeContext.Provider
       value={{
         hasSeenWelcome,
         markWelcomeAsSeen,
+        resetWelcome,
       }}
     >
       {children}

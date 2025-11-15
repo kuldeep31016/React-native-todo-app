@@ -12,7 +12,6 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useTasks } from '../context/TaskContext';
 import { TaskCard } from '../components/task/TaskCard';
-import { QuickAddTask } from '../components/task/QuickAddTask';
 import { AuthModal } from '../components/auth/AuthModal';
 import { SignInButton } from '../components/auth/SignInButton';
 import { EmptyState } from '../components/common/EmptyState';
@@ -85,9 +84,6 @@ export const LandingScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
           </Text>
         )}
       </View>
-
-      {/* Quick Add Task */}
-      <QuickAddTask />
 
       {/* Task List */}
       <FlatList

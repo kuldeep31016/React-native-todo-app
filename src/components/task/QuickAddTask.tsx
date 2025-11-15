@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import {
   View,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../../context/ThemeContext';
 import { useTasks } from '../../context/TaskContext';
 import { PRIORITY_LEVELS, TASK_CATEGORIES } from '../../utils/constants';
@@ -65,30 +63,15 @@ export const QuickAddTask: React.FC<QuickAddTaskProps> = ({ onAddComplete }) => 
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={[styles.input, { color: colors.text }]}
-          placeholder="What needs to be done?"
-          placeholderTextColor={colors.textSecondary}
-          value={taskTitle}
-          onChangeText={setTaskTitle}
-          onFocus={handleFocus}
-          onSubmitEditing={handleAddTask}
-        />
-        <TouchableOpacity
-          style={[
-            styles.addButton,
-            {
-              backgroundColor: colors.primary,
-              opacity: taskTitle.trim() ? 1 : 0.5,
-            },
-          ]}
-          onPress={handleAddTask}
-          disabled={!taskTitle.trim()}
-        >
-          <Icon name="add" size={24} color={colors.background} />
-        </TouchableOpacity>
-      </View>
+      <TextInput
+        style={[styles.input, { color: colors.text }]}
+        placeholder="What needs to be done?"
+        placeholderTextColor={colors.textSecondary}
+        value={taskTitle}
+        onChangeText={setTaskTitle}
+        onFocus={handleFocus}
+        onSubmitEditing={handleAddTask}
+      />
 
       {isExpanded && (
         <TextInput
@@ -124,22 +107,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
   input: {
-    flex: 1,
     fontSize: 16,
     paddingVertical: 12,
-  },
-  addButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   descriptionInput: {
     marginTop: 12,

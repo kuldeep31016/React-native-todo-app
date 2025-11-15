@@ -100,6 +100,11 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation, route })
       navigation.replace('Landing');
     } catch (error: any) {
       console.error('Google sign in error:', error);
+      // Don't show alert if user cancelled the account picker
+      if (error.message?.includes('cancelled') || error.message?.includes('cancel')) {
+        // User cancelled - just stop loading, no alert needed
+        return;
+      }
       Alert.alert(
         'Sign In Failed',
         error.message || 'Unable to sign in with Google. Please try again.',

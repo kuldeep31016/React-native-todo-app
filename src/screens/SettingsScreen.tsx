@@ -11,12 +11,14 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useWelcome } from '../context/WelcomeContext';
 import { resetWelcomeScreen } from '../utils/resetWelcome';
 import Toast from 'react-native-toast-message';
 
 export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { colors, mode, isDark, setThemeMode } = useTheme();
   const { user, userProfile, signOut } = useAuth();
+  const { resetWelcome } = useWelcome();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -28,17 +30,46 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
           text: 'Sign Out',
           style: 'destructive',
           onPress: async () => {
+            // Reset welcome screen first (non-blocking)
+            try {
+              await resetWelcome();
+            } catch (resetError) {
+              console.log('Reset welcome (non-blocking):', resetError);
+            }
+            
+            // Sign out (non-blocking - errors are ignored)
             try {
               await signOut();
-              Toast.show({
-                type: 'success',
-                text1: 'Signed out',
-                text2: 'You have been signed out successfully',
-              });
-            } catch (error) {
-              console.error('Sign out error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
+            } catch (signOutError: any) {
+              // Silently handle any sign out errors - state will be cleared anyway
+              console.log('Sign out completed (state cleared):', signOutError?.message || 'OK');
             }
+            
+            // Show success message
+            Toast.show({
+              type: 'success',
+              text1: 'Signed out',
+              text2: 'You have been signed out successfully',
+              visibilityTime: 2000,
+            });
+            
+            // Always navigate to Welcome screen
+            setTimeout(() => {
+              try {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Welcome' }],
+                });
+              } catch (navError) {
+                // Fallback navigation methods
+                try {
+                  navigation.replace('Welcome');
+                } catch (replaceError) {
+                  // Last resort: navigate
+                  navigation.navigate('Welcome');
+                }
+              }
+            }, 200);
           },
         },
       ]

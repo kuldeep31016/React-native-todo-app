@@ -114,7 +114,7 @@ A feature-rich TODO application built with React Native CLI, Firebase, and Googl
 
 2. **Run on Android device/emulator**
    ```bash
-   npm run android
+npm run android
    ```
 
    Or use Android Studio to build and run the app.
