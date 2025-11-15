@@ -34,13 +34,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           let profile = await getUserProfile(authUser.uid);
           if (!profile) {
             // Create profile if it doesn't exist
-            profile = {
+            const newProfile = {
               name: authUser.displayName || 'User',
               email: authUser.email || '',
               photoURL: authUser.photoURL || undefined,
-              createdAt: new Date(),
             };
-            await createUserProfile(authUser.uid, profile);
+            // Remove undefined photoURL if it doesn't exist
+            if (!newProfile.photoURL) {
+              delete newProfile.photoURL;
+            }
+            await createUserProfile(authUser.uid, newProfile);
+            profile = {
+              ...newProfile,
+              createdAt: new Date(),
+            } as UserProfile;
           }
           setUserProfile(profile);
         } catch (error) {
@@ -70,21 +77,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         result = await signInWithGoogle();
       }
       
-      if (result.user) {
-        const profile = {
-          name: result.user.displayName || 'User',
-          email: result.user.email || '',
-          photoURL: result.user.photoURL || undefined,
-          createdAt: new Date(),
-        };
+      if (result && result.user) {
+        // Wait a bit for Firebase to update
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // Check if profile exists, if not create it
-        let existingProfile = await getUserProfile(result.user.uid);
-        if (!existingProfile) {
-          await createUserProfile(result.user.uid, profile);
-        } else {
-          profile.name = existingProfile.name;
-          profile.photoURL = existingProfile.photoURL;
+        let profile = await getUserProfile(result.user.uid);
+        
+        if (!profile) {
+          const newProfile: any = {
+            name: result.user.displayName || 'User',
+            email: result.user.email || email || '',
+          };
+          
+          // Only add photoURL if it exists
+          if (result.user.photoURL) {
+            newProfile.photoURL = result.user.photoURL;
+          }
+          
+          await createUserProfile(result.user.uid, newProfile);
+          profile = {
+            ...newProfile,
+            createdAt: new Date(),
+          } as UserProfile;
         }
         
         setUserProfile(profile);
@@ -94,7 +109,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (localTasks.length > 0) {
           try {
             await syncLocalTasksToFirebase(result.user.uid, localTasks);
-            // Tasks will be refreshed automatically via Firebase subscription
           } catch (error) {
             console.error('Error syncing local tasks:', error);
             // Don't throw - user is still signed in
@@ -122,15 +136,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         result = await signInWithGoogle();
       }
       
-      if (result.user) {
-        const profile = {
+      if (result && result.user) {
+        // Wait a bit for Firebase to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Create profile for new user
+        const newProfile: any = {
           name: fullName || result.user.displayName || 'User',
           email: result.user.email || email || '',
-          photoURL: result.user.photoURL || undefined,
-          createdAt: new Date(),
         };
         
-        await createUserProfile(result.user.uid, profile);
+        // Only add photoURL if it exists
+        if (result.user.photoURL) {
+          newProfile.photoURL = result.user.photoURL;
+        }
+        
+        await createUserProfile(result.user.uid, newProfile);
+        
+        const profile = {
+          ...newProfile,
+          createdAt: new Date(),
+        } as UserProfile;
+        
         setUserProfile(profile);
         setIsLocalMode(false);
 
@@ -164,11 +191,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUserProfile = async (profile: Partial<UserProfile>) => {
     if (!user) return;
     try {
-      await createUserProfile(user.uid, {
-        ...userProfile!,
-        ...profile,
-      });
-      setUserProfile(prev => prev ? { ...prev, ...profile } : null);
+      const cleanProfile: any = {
+        name: profile.name || userProfile?.name || 'User',
+        email: profile.email || userProfile?.email || '',
+      };
+      
+      if (profile.photoURL) {
+        cleanProfile.photoURL = profile.photoURL;
+      }
+      
+      await createUserProfile(user.uid, cleanProfile);
+      setUserProfile(prev => prev ? { ...prev, ...cleanProfile, createdAt: prev.createdAt } : null);
     } catch (error) {
       console.error('Update profile error:', error);
       throw error;

@@ -105,38 +105,74 @@ export const subscribeToTasks = (
 
 // User Profile
 export const createUserProfile = async (userId: string, profile: Omit<UserProfile, 'createdAt'>) => {
+  // Clean the profile data - remove undefined values
+  const cleanProfile: any = {
+    name: profile.name || 'User',
+    email: profile.email || '',
+  };
+  
+  // Only add photoURL if it exists and is not undefined
+  if (profile.photoURL) {
+    cleanProfile.photoURL = profile.photoURL;
+  }
+  
   const profileData = {
-    ...profile,
+    ...cleanProfile,
     createdAt: Timestamp.now(),
   };
-  await db.collection('users').doc(userId).set({
-    profile: profileData,
-  }, { merge: true });
-  return profileData;
+  
+  try {
+    await db.collection('users').doc(userId).set({
+      profile: profileData,
+    }, { merge: true });
+    return profileData;
+  } catch (error) {
+    console.error('Error creating user profile:', error);
+    throw error;
+  }
 };
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  const doc = await db.collection('users').doc(userId).get();
-  if (!doc.exists) return null;
-  const data = doc.data();
-  return data?.profile || null;
+  try {
+    const doc = await db.collection('users').doc(userId).get();
+    if (!doc.exists) return null;
+    const data = doc.data();
+    return data?.profile || null;
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    return null;
+  }
 };
 
 // User Settings
 export const updateUserSettings = async (userId: string, settings: Partial<UserSettings>) => {
+  const settingsData: any = {};
+  
+  if (settings.theme !== undefined) {
+    settingsData.theme = settings.theme;
+  }
+  if (settings.notifications !== undefined) {
+    settingsData.notifications = settings.notifications;
+  }
+  
   await db.collection('users').doc(userId).set({
     settings: {
-      theme: settings.theme || 'system',
-      notifications: settings.notifications !== undefined ? settings.notifications : true,
+      theme: settingsData.theme || 'system',
+      notifications: settingsData.notifications !== undefined ? settingsData.notifications : true,
     },
   }, { merge: true });
 };
 
 export const getUserSettings = async (userId: string): Promise<UserSettings | null> => {
-  const doc = await db.collection('users').doc(userId).get();
-  if (!doc.exists) return null;
-  const data = doc.data();
-  return data?.settings || { theme: 'system', notifications: true };
+  try {
+    const doc = await db.collection('users').doc(userId).get();
+    if (!doc.exists) return null;
+    const data = doc.data();
+    return data?.settings || { theme: 'system', notifications: true };
+  } catch (error) {
+    console.error('Error getting user settings:', error);
+    return { theme: 'system', notifications: true };
+  }
 };
 
 // Categories
@@ -152,4 +188,3 @@ export const createCategory = async (category: Omit<Category, 'id'>) => {
   const docRef = await db.collection('categories').add(category);
   return { id: docRef.id, ...category };
 };
-
