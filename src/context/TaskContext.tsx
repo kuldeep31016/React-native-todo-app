@@ -70,9 +70,25 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user, isLocalMode]);
 
   const addTask = async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+    // Clean task data - remove undefined values
+    const cleanedTaskData: any = {
+      title: taskData.title,
+      completed: taskData.completed,
+      priority: taskData.priority,
+      category: taskData.category,
+    };
+    
+    // Only add description if it exists
+    if (taskData.description) {
+      cleanedTaskData.description = taskData.description;
+    }
+    
+    // Handle dueDate
+    cleanedTaskData.dueDate = taskData.dueDate || null;
+    
     const now = new Date();
     const newTask: Omit<Task, 'id'> = {
-      ...taskData,
+      ...cleanedTaskData,
       userId: user?.uid || '',
       createdAt: now,
       updatedAt: now,
@@ -98,7 +114,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       // Save to Firebase
       try {
-        await createTask(newTask);
+        await createTask(cleanedTaskData);
       } catch (error) {
         console.error('Error adding task:', error);
         throw error;
@@ -107,6 +123,14 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    // Clean updates - remove undefined values
+    const cleanedUpdates: any = {};
+    for (const key in updates) {
+      if (updates[key as keyof Task] !== undefined) {
+        cleanedUpdates[key] = updates[key as keyof Task];
+      }
+    }
+    
     if (isLocalMode || !user) {
       // Update in local storage
       try {
@@ -115,7 +139,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (index !== -1) {
           localTasks[index] = {
             ...localTasks[index],
-            ...updates,
+            ...cleanedUpdates,
             updatedAt: new Date().toISOString(),
           } as LocalTask;
           await saveLocalTasks(localTasks);
@@ -124,7 +148,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setTasks(
             tasks.map((t) =>
               t.id === taskId
-                ? { ...t, ...updates, updatedAt: new Date() }
+                ? { ...t, ...cleanedUpdates, updatedAt: new Date() }
                 : t
             )
           );
@@ -136,7 +160,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       // Update in Firebase
       try {
-        await updateTask(taskId, updates);
+        await updateTask(taskId, cleanedUpdates);
       } catch (error) {
         console.error('Error updating task:', error);
         throw error;

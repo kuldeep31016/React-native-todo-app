@@ -34,6 +34,17 @@ export interface UserSettings {
   notifications: boolean;
 }
 
+// Helper function to remove undefined values
+const removeUndefined = (obj: any): any => {
+  const cleaned: any = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      cleaned[key] = obj[key];
+    }
+  }
+  return cleaned;
+};
+
 // Tasks Collection
 export const tasksCollection = (userId: string) => {
   return db.collection('tasks').where('userId', '==', userId);
@@ -41,22 +52,51 @@ export const tasksCollection = (userId: string) => {
 
 export const createTask = async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
   const now = Timestamp.now();
+  
+  // Clean the task data - remove undefined values
+  const cleanedTask = removeUndefined({
+    userId: task.userId,
+    title: task.title,
+    description: task.description,
+    completed: task.completed,
+    priority: task.priority,
+    category: task.category,
+  });
+  
+  // Handle dueDate separately
+  if (task.dueDate) {
+    cleanedTask.dueDate = task.dueDate instanceof Date 
+      ? Timestamp.fromDate(task.dueDate) 
+      : task.dueDate;
+  } else {
+    cleanedTask.dueDate = null;
+  }
+  
   const taskData = {
-    ...task,
-    dueDate: task.dueDate ? (task.dueDate instanceof Date ? Timestamp.fromDate(task.dueDate) : task.dueDate) : null,
+    ...cleanedTask,
     createdAt: now,
     updatedAt: now,
   };
-  const docRef = await db.collection('tasks').add(taskData);
-  return { id: docRef.id, ...taskData };
+  
+  try {
+    const docRef = await db.collection('tasks').add(taskData);
+    return { id: docRef.id, ...taskData };
+  } catch (error) {
+    console.error('Error creating task:', error);
+    throw error;
+  }
 };
 
 export const updateTask = async (taskId: string, updates: Partial<Task>) => {
+  // Clean updates - remove undefined values
+  const cleanedUpdates = removeUndefined(updates);
+  
   const updateData: any = {
-    ...updates,
+    ...cleanedUpdates,
     updatedAt: Timestamp.now(),
   };
   
+  // Handle dueDate separately
   if (updates.dueDate !== undefined) {
     updateData.dueDate = updates.dueDate
       ? updates.dueDate instanceof Date
@@ -65,20 +105,35 @@ export const updateTask = async (taskId: string, updates: Partial<Task>) => {
       : null;
   }
   
-  await db.collection('tasks').doc(taskId).update(updateData);
-  return { id: taskId, ...updateData };
+  try {
+    await db.collection('tasks').doc(taskId).update(updateData);
+    return { id: taskId, ...updateData };
+  } catch (error) {
+    console.error('Error updating task:', error);
+    throw error;
+  }
 };
 
 export const deleteTask = async (taskId: string) => {
-  await db.collection('tasks').doc(taskId).delete();
+  try {
+    await db.collection('tasks').doc(taskId).delete();
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    throw error;
+  }
 };
 
 export const getTasks = async (userId: string): Promise<Task[]> => {
-  const snapshot = await db.collection('tasks').where('userId', '==', userId).get();
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Task[];
+  try {
+    const snapshot = await db.collection('tasks').where('userId', '==', userId).get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Task[];
+  } catch (error) {
+    console.error('Error getting tasks:', error);
+    return [];
+  }
 };
 
 export const subscribeToTasks = (
@@ -99,6 +154,22 @@ export const subscribeToTasks = (
       },
       error => {
         console.error('Error subscribing to tasks:', error);
+        // If orderBy fails, try without it
+        db
+          .collection('tasks')
+          .where('userId', '==', userId)
+          .onSnapshot(
+            snapshot => {
+              const tasks = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+              })) as Task[];
+              callback(tasks);
+            },
+            err => {
+              console.error('Error in fallback subscription:', err);
+            }
+          );
       }
     );
 };
@@ -177,14 +248,20 @@ export const getUserSettings = async (userId: string): Promise<UserSettings | nu
 
 // Categories
 export const getCategories = async (userId: string): Promise<Category[]> => {
-  const snapshot = await db.collection('categories').where('userId', '==', userId).get();
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Category[];
+  try {
+    const snapshot = await db.collection('categories').where('userId', '==', userId).get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Category[];
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    return [];
+  }
 };
 
 export const createCategory = async (category: Omit<Category, 'id'>) => {
-  const docRef = await db.collection('categories').add(category);
-  return { id: docRef.id, ...category };
+  const cleanedCategory = removeUndefined(category);
+  const docRef = await db.collection('categories').add(cleanedCategory);
+  return { id: docRef.id, ...cleanedCategory };
 };

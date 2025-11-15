@@ -54,14 +54,21 @@ export const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route 
     }
 
     try {
-      const taskData = {
+      // Build task data without undefined values
+      const taskData: any = {
         title: title.trim(),
-        description: description.trim() || undefined,
         priority,
         category,
-        dueDate: dueDate || null,
         completed: editingTask?.completed || false,
       };
+      
+      // Only add description if it's not empty
+      if (description.trim()) {
+        taskData.description = description.trim();
+      }
+      
+      // Handle dueDate - set to null if not provided
+      taskData.dueDate = dueDate || null;
 
       if (editingTask?.id) {
         await updateTask(editingTask.id, taskData);
