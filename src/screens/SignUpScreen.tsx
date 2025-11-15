@@ -19,14 +19,19 @@ import Toast from 'react-native-toast-message';
 
 interface SignUpScreenProps {
   navigation: any;
+  route?: {
+    params?: {
+      email?: string;
+    };
+  };
 }
 
-export const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
+export const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation, route }) => {
   const { colors } = useTheme();
   const { signUp } = useAuth();
   const { markWelcomeAsSeen } = useWelcome();
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(route?.params?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
