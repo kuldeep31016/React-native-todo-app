@@ -114,7 +114,12 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       // Save to Firebase
       try {
-        await createTask(cleanedTaskData);
+        // Add userId to cleaned task data
+        const taskWithUserId = {
+          ...cleanedTaskData,
+          userId: user.uid,
+        };
+        await createTask(taskWithUserId);
       } catch (error) {
         console.error('Error adding task:', error);
         throw error;
