@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { resetWelcomeScreen } from '../utils/resetWelcome';
 import Toast from 'react-native-toast-message';
 
 export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -183,6 +184,26 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
               1.0.0
             </Text>
           </View>
+
+          <TouchableOpacity
+            style={[styles.settingItem, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+            onPress={async () => {
+              const success = await resetWelcomeScreen();
+              if (success) {
+                Alert.alert(
+                  'Welcome Screen Reset',
+                  'Welcome screen has been reset. Please restart the app to see it again.',
+                  [{ text: 'OK' }]
+                );
+              }
+            }}
+          >
+            <View style={styles.settingLeft}>
+              <Icon name="refresh" size={24} color={colors.primary} />
+              <Text style={[styles.settingLabel, { color: colors.text }]}>Reset Welcome Screen</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {/* Sign Out Button */}
