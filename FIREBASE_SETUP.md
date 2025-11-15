@@ -51,23 +51,59 @@ This guide will help you set up Firebase for the Todo App.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Tasks collection - users can only access their own tasks
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Tasks Collection - Users can only access their own tasks
     match /tasks/{taskId} {
-      allow read, write: if request.auth != null && 
-        (request.resource.data.userId == request.auth.uid || 
-         resource.data.userId == request.auth.uid);
+      // Allow read if user is authenticated and owns the task
+      allow read: if isAuthenticated() && 
+        (resource == null || resource.data.userId == request.auth.uid);
+      
+      // Allow create if user is authenticated and sets their own userId
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if user is authenticated and owns the task
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if user is authenticated and owns the task
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
     }
     
-    // Users collection - users can only access their own data
+    // Users Collection - Users can only access their own profile
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow read if user is authenticated and accessing their own profile
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Allow write if user is authenticated and accessing their own profile
+      allow write: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Categories collection - users can only access their own categories
+    // Categories Collection - Users can only access their own categories
     match /categories/{categoryId} {
-      allow read, write: if request.auth != null && 
-        (request.resource.data.userId == request.auth.uid || 
-         resource.data.userId == request.auth.uid);
+      // Allow read if user is authenticated and owns the category
+      allow read: if isAuthenticated() && 
+        (resource == null || resource.data.userId == request.auth.uid);
+      
+      // Allow create if user is authenticated and sets their own userId
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if user is authenticated and owns the category
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if user is authenticated and owns the category
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
     }
   }
 }
