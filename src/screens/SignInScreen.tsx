@@ -19,13 +19,18 @@ import Toast from 'react-native-toast-message';
 
 interface SignInScreenProps {
   navigation: any;
+  route?: {
+    params?: {
+      email?: string;
+    };
+  };
 }
 
-export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation }) => {
+export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation, route }) => {
   const { colors } = useTheme();
   const { signIn } = useAuth();
   const { markWelcomeAsSeen } = useWelcome();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(route?.params?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -48,11 +53,35 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation }) => {
       navigation.replace('Landing');
     } catch (error: any) {
       console.error('Sign in error:', error);
-      Alert.alert(
-        'Sign In Failed',
-        error.message || 'Invalid email or password. Please try again.',
-        [{ text: 'OK' }]
-      );
+      
+      // Better error handling
+      if (error.code === 'auth/user-not-found') {
+        Alert.alert(
+          'Account Not Found',
+          'No account found with this email. Would you like to sign up instead?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Sign Up',
+              onPress: () => {
+                navigation.replace('SignUp', { email: email });
+              },
+            },
+          ]
+        );
+      } else if (error.code === 'auth/wrong-password') {
+        Alert.alert('Wrong Password', 'The password you entered is incorrect. Please try again.');
+      } else if (error.code === 'auth/invalid-email') {
+        Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      } else if (error.code === 'auth/invalid-credential') {
+        Alert.alert('Invalid Credentials', 'Email or password is incorrect. Please try again.');
+      } else {
+        Alert.alert(
+          'Sign In Failed',
+          error.message || 'Invalid email or password. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
     } finally {
       setLoading(false);
     }

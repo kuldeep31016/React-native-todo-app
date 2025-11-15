@@ -62,11 +62,34 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
       navigation.replace('Landing');
     } catch (error: any) {
       console.error('Sign up error:', error);
-      Alert.alert(
-        'Sign Up Failed',
-        error.message || 'Unable to create account. Please try again.',
-        [{ text: 'OK' }]
-      );
+      
+      // Check if email is already in use
+      if (error.code === 'auth/email-already-in-use' || error.message?.includes('email-already-in-use')) {
+        Alert.alert(
+          'Account Already Exists',
+          'This email address is already registered. Would you like to sign in instead?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Sign In',
+              onPress: () => {
+                // Navigate to sign in with email pre-filled
+                navigation.replace('SignIn', { email: email });
+              },
+            },
+          ]
+        );
+      } else if (error.code === 'auth/invalid-email') {
+        Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      } else if (error.code === 'auth/weak-password') {
+        Alert.alert('Weak Password', 'Password should be at least 6 characters long.');
+      } else {
+        Alert.alert(
+          'Sign Up Failed',
+          error.message || 'Unable to create account. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
     } finally {
       setLoading(false);
     }
