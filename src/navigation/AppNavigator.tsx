@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { WelcomeScreen } from '../screens/WelcomeScreen';
 import { LandingScreen } from '../screens/LandingScreen';
 import { AddTaskScreen } from '../screens/AddTaskScreen';
 import { TaskDetailScreen } from '../screens/TaskDetailScreen';
@@ -8,15 +9,16 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { StatisticsScreen } from '../screens/StatisticsScreen';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
+import { useWelcome } from '../context/WelcomeContext';
 
 const Stack = createNativeStackNavigator();
 
 export const AppNavigator: React.FC = () => {
-  const { loading } = useAuth();
+  const { hasSeenWelcome } = useWelcome();
   const { colors } = useTheme();
 
-  if (loading) {
+  // Show loading while checking welcome status
+  if (hasSeenWelcome === null) {
     return <LoadingSpinner />;
   }
 
@@ -33,14 +35,23 @@ export const AppNavigator: React.FC = () => {
           },
         }}
       >
-        {/* Landing Screen - Always accessible, no auth required */}
+        {/* Welcome Screen - Show first time only */}
+        {!hasSeenWelcome ? (
+          <Stack.Screen
+            name="Welcome"
+            component={WelcomeScreen}
+            options={{ headerShown: false }}
+          />
+        ) : null}
+
+        {/* Landing Screen - Main screen */}
         <Stack.Screen
           name="Landing"
           component={LandingScreen}
           options={{ headerShown: false }}
         />
         
-        {/* Task Management Screens - Available to all users */}
+        {/* Task Management Screens */}
         <Stack.Screen
           name="AddTask"
           component={AddTaskScreen}
@@ -57,7 +68,7 @@ export const AppNavigator: React.FC = () => {
           }}
         />
         
-        {/* Settings - Available to all users */}
+        {/* Settings */}
         <Stack.Screen
           name="Settings"
           component={SettingsScreen}
@@ -66,7 +77,7 @@ export const AppNavigator: React.FC = () => {
           }}
         />
         
-        {/* Statistics - Only for authenticated users (handled in screen) */}
+        {/* Statistics */}
         <Stack.Screen
           name="Statistics"
           component={StatisticsScreen}

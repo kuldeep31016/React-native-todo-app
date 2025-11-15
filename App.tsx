@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './src/context/AuthContext';
 import { TaskProvider } from './src/context/TaskContext';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { WelcomeProvider } from './src/context/WelcomeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import Toast from 'react-native-toast-message';
 
@@ -29,11 +30,13 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <TaskProvider>
-              <AppContent />
-            </TaskProvider>
-          </AuthProvider>
+          <WelcomeProvider>
+            <AuthProvider>
+              <TaskProvider>
+                <AppContent />
+              </TaskProvider>
+            </AuthProvider>
+          </WelcomeProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
