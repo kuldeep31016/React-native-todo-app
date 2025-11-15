@@ -118,11 +118,34 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation, route })
         // User cancelled - just stop loading, no alert needed
         return;
       }
-      Alert.alert(
-        'Sign Up Failed',
-        error.message || 'Unable to sign up with Google. Please try again.',
-        [{ text: 'OK' }]
-      );
+      // Show more helpful error message for DEVELOPER_ERROR
+      if (error.message?.includes('DEVELOPER_ERROR') || error.message?.includes('SHA-1') || error.message?.includes('configuration error')) {
+        Alert.alert(
+          'Configuration Error',
+          'Google Sign-In requires SHA-1 fingerprint.\n\nAdd this to Firebase:\n1. Firebase Console > Project Settings\n2. Your apps > Android app\n3. Add fingerprint:\n\n5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25\n\nWait 5 minutes after adding, then try again.',
+          [{ text: 'OK' }]
+        );
+      } else if (error.message?.includes('account already exists') || error.message?.includes('different credential')) {
+        Alert.alert(
+          'Account Exists',
+          error.message || 'An account with this email already exists. Please sign in instead.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Sign In',
+              onPress: () => {
+                navigation.replace('SignIn', { email: email });
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Sign Up Failed',
+          error.message || 'Unable to sign up with Google. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
     } finally {
       setLoading(false);
     }

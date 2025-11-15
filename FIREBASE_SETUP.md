@@ -111,7 +111,47 @@ service cloud.firestore {
 
 3. Click "Publish"
 
-## Step 7: Enable Firestore Indexes (if needed)
+## Step 7: Add SHA-1 Certificate Fingerprint (CRITICAL for Google Sign-In)
+
+**This step is ESSENTIAL to fix DEVELOPER_ERROR!**
+
+The DEVELOPER_ERROR occurs when SHA-1 fingerprint is not added to Firebase. Follow these steps:
+
+### Get Debug SHA-1 Fingerprint:
+1. Open terminal in your project root
+2. Navigate to android directory:
+   ```bash
+   cd android
+   ```
+3. Run this command to get your debug SHA-1:
+   ```bash
+   ./gradlew signingReport
+   ```
+4. Look for the SHA-1 fingerprint in the output (under `Variant: debug`)
+5. Copy the SHA-1 fingerprint (it looks like: `AA:BB:CC:DD:EE:FF:...`)
+
+### Add SHA-1 to Firebase:
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Click on the **gear icon** (⚙️) next to "Project Overview"
+4. Select **Project Settings**
+5. Scroll down to **Your apps** section
+6. Find your Android app (`com.todoapp`)
+7. Click **Add fingerprint** button
+8. Paste your SHA-1 fingerprint
+9. Click **Save**
+
+### For Release Build (when building APK):
+1. Generate a keystore file (if you haven't already)
+2. Get SHA-1 from your release keystore:
+   ```bash
+   keytool -list -v -keystore your-release-key.keystore -alias your-key-alias
+   ```
+3. Add this SHA-1 to Firebase as well
+
+**Important:** After adding SHA-1, wait 2-5 minutes for changes to propagate, then try signing in again.
+
+## Step 8: Enable Firestore Indexes (if needed)
 
 If you see index errors in the console, Firebase will provide links to create the required indexes. Click those links to create them automatically.
 
@@ -120,17 +160,34 @@ If you see index errors in the console, Firebase will provide links to create th
 - [ ] `google-services.json` is in `android/app/` directory
 - [ ] Google Sign-In is enabled in Firebase Console
 - [ ] Web Client ID is configured in `src/services/auth.ts`
+- [ ] **SHA-1 certificate fingerprint is added to Firebase (CRITICAL!)**
 - [ ] Firestore database is created
 - [ ] Firestore security rules are configured
 - [ ] Package name matches: `com.todoapp`
 
 ## Troubleshooting
 
+### Google Sign-In DEVELOPER_ERROR (Most Common Issue)
+**This is the #1 cause of Google Sign-In failures!**
+
+**Solution:**
+1. Get your SHA-1 fingerprint (see Step 7 above)
+2. Add it to Firebase Console > Project Settings > Your apps > Android app
+3. Wait 2-5 minutes after adding
+4. Try signing in again
+
+**Quick SHA-1 Command:**
+```bash
+cd android && ./gradlew signingReport
+```
+Look for SHA-1 under "Variant: debug" in the output.
+
 ### Google Sign-In not working
-- Verify `google-services.json` is in the correct location
-- Check that Web Client ID is correctly set
+- **First:** Make sure SHA-1 fingerprint is added (see Step 7)
+- Verify `google-services.json` is in `android/app/` directory
+- Check that Web Client ID is correctly set in `src/services/auth.ts`
 - Ensure Google Sign-In is enabled in Firebase Console
-- Make sure SHA-1 fingerprint is added to Firebase (for release builds)
+- Try signing out and signing in again after adding SHA-1
 
 ### Firestore permission denied
 - Check security rules are published

@@ -108,11 +108,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ visible, onClose }) => {
         // User cancelled - just stop loading, no alert needed
         return;
       }
-      Alert.alert(
-        'Sign In Failed',
-        error.message || 'Unable to sign in with Google. Please try again.',
-        [{ text: 'OK' }]
-      );
+      // Show more helpful error message for DEVELOPER_ERROR
+      if (error.message?.includes('SHA-1') || error.message?.includes('configuration error')) {
+        Alert.alert(
+          'Configuration Error',
+          'Google Sign-In is not properly configured. Please check:\n\n1. SHA-1 certificate fingerprint is added to Firebase\n2. Web Client ID is correct\n3. google-services.json is in place\n\nSee FIREBASE_SETUP.md for details.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Sign In Failed',
+          error.message || 'Unable to sign in with Google. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
     } finally {
       setLoading(false);
     }
