@@ -8,7 +8,7 @@ import {
   convertLocalTaskToTask,
   convertTaskToLocalTask,
 } from '../services/localStorage';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'react-native-get-random-values';
 
 interface TaskContextType {
   tasks: Task[];
@@ -83,7 +83,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const localTasks = await loadLocalTasks();
         const localTask: LocalTask = {
-          id: uuidv4(),
+          id: randomUUID(),
           ...convertTaskToLocalTask(newTask as Task),
         };
         localTasks.push(localTask);

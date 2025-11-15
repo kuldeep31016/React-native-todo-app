@@ -13,7 +13,6 @@ interface AuthContextType {
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
-  onSyncComplete?: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,7 +22,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLocalMode, setIsLocalMode] = useState(true);
-  const [syncCallback, setSyncCallback] = useState<(() => void) | undefined>();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(async (authUser) => {
@@ -79,10 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (localTasks.length > 0) {
           try {
             await syncLocalTasksToFirebase(result.user.uid, localTasks);
-            // Notify TaskContext to refresh
-            if (syncCallback) {
-              syncCallback();
-            }
+            // Tasks will be refreshed automatically via Firebase subscription
           } catch (error) {
             console.error('Error syncing local tasks:', error);
             // Don't throw - user is still signed in
@@ -131,7 +126,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signIn: handleSignIn,
         signOut: handleSignOut,
         updateUserProfile,
-        onSyncComplete: (callback) => setSyncCallback(() => callback),
       }}
     >
       {children}
