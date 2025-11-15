@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { signInWithGoogle, signOut, getCurrentUser, onAuthStateChanged } from '../services/auth';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, getCurrentUser, onAuthStateChanged } from '../services/auth';
 import { createUserProfile, getUserProfile } from '../services/firestore';
 import { UserProfile } from '../services/firestore';
 import { syncLocalTasksToFirebase } from '../utils/syncManager';
@@ -10,7 +10,8 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   isLocalMode: boolean;
-  signIn: () => Promise<void>;
+  signIn: (email?: string, password?: string) => Promise<void>;
+  signUp: (email?: string, password?: string, fullName?: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
 }
@@ -54,13 +55,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return unsubscribe;
   }, []);
 
-  const handleSignIn = async () => {
+  const handleSignIn = async (email?: string, password?: string) => {
     try {
       // Get local tasks before signing in
       const localTasks = await loadLocalTasks();
       
-      // Sign in with Google
-      const result = await signInWithGoogle();
+      let result;
+      
+      if (email && password) {
+        // Email/Password sign in
+        result = await signInWithEmail(email, password);
+      } else {
+        // Google sign in
+        result = await signInWithGoogle();
+      }
       
       if (result.user) {
         const profile = {
@@ -69,7 +77,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           photoURL: result.user.photoURL || undefined,
           createdAt: new Date(),
         };
-        await createUserProfile(result.user.uid, profile);
+        
+        // Check if profile exists, if not create it
+        let existingProfile = await getUserProfile(result.user.uid);
+        if (!existingProfile) {
+          await createUserProfile(result.user.uid, profile);
+        } else {
+          profile.name = existingProfile.name;
+          profile.photoURL = existingProfile.photoURL;
+        }
+        
         setUserProfile(profile);
         setIsLocalMode(false);
 
@@ -86,6 +103,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       console.error('Sign in error:', error);
+      throw error;
+    }
+  };
+
+  const handleSignUp = async (email?: string, password?: string, fullName?: string) => {
+    try {
+      // Get local tasks before signing up
+      const localTasks = await loadLocalTasks();
+      
+      let result;
+      
+      if (email && password && fullName) {
+        // Email/Password sign up
+        result = await signUpWithEmail(email, password, fullName);
+      } else {
+        // Google sign up (same as sign in)
+        result = await signInWithGoogle();
+      }
+      
+      if (result.user) {
+        const profile = {
+          name: fullName || result.user.displayName || 'User',
+          email: result.user.email || email || '',
+          photoURL: result.user.photoURL || undefined,
+          createdAt: new Date(),
+        };
+        
+        await createUserProfile(result.user.uid, profile);
+        setUserProfile(profile);
+        setIsLocalMode(false);
+
+        // Sync local tasks to Firebase if any exist
+        if (localTasks.length > 0) {
+          try {
+            await syncLocalTasksToFirebase(result.user.uid, localTasks);
+          } catch (error) {
+            console.error('Error syncing local tasks:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Sign up error:', error);
       throw error;
     }
   };
@@ -124,6 +183,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loading,
         isLocalMode,
         signIn: handleSignIn,
+        signUp: handleSignUp,
         signOut: handleSignOut,
         updateUserProfile,
       }}

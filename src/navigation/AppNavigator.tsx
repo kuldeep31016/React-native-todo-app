@@ -2,6 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { WelcomeScreen } from '../screens/WelcomeScreen';
+import { SignInScreen } from '../screens/SignInScreen';
+import { SignUpScreen } from '../screens/SignUpScreen';
 import { LandingScreen } from '../screens/LandingScreen';
 import { AddTaskScreen } from '../screens/AddTaskScreen';
 import { TaskDetailScreen } from '../screens/TaskDetailScreen';
@@ -43,6 +45,18 @@ export const AppNavigator: React.FC = () => {
         <Stack.Screen
           name="Welcome"
           component={WelcomeScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Authentication Screens */}
+        <Stack.Screen
+          name="SignIn"
+          component={SignInScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SignUp"
+          component={SignUpScreen}
           options={{ headerShown: false }}
         />
 

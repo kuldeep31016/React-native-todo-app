@@ -6,10 +6,8 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { useWelcome } from '../context/WelcomeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -19,10 +17,8 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const { colors } = useTheme();
-  const { markWelcomeAsSeen } = useWelcome();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     Animated.parallel([
@@ -39,26 +35,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     ]).start();
   }, []);
 
-  const handleGetStarted = async () => {
-    if (isNavigating) return; // Prevent multiple taps
-    
-    try {
-      setIsNavigating(true);
-      await markWelcomeAsSeen();
-      
-      // Small delay to ensure state is updated
-      setTimeout(() => {
-        if (navigation && navigation.replace) {
-          navigation.replace('Landing');
-        } else if (navigation && navigation.navigate) {
-          navigation.navigate('Landing');
-        }
-      }, 100);
-    } catch (error) {
-      console.error('Error in handleGetStarted:', error);
-      Alert.alert('Error', 'Unable to proceed. Please try again.');
-      setIsNavigating(false);
-    }
+  const handleSignIn = () => {
+    navigation.navigate('SignIn');
+  };
+
+  const handleSignUp = () => {
+    navigation.navigate('SignUp');
   };
 
   return (
@@ -113,18 +95,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, styles.signInButton, { borderColor: colors.primary }]}
-            onPress={handleGetStarted}
+            onPress={handleSignIn}
             activeOpacity={0.7}
-            disabled={isNavigating}
           >
             <Text style={[styles.buttonText, { color: colors.primary }]}>Sign in</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, styles.signUpButton, { backgroundColor: colors.primary }]}
-            onPress={handleGetStarted}
+            onPress={handleSignUp}
             activeOpacity={0.7}
-            disabled={isNavigating}
           >
             <Text style={[styles.buttonText, styles.signUpButtonText, { color: colors.background }]}>
               Sign up
