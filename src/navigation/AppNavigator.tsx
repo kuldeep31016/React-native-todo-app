@@ -22,9 +22,13 @@ export const AppNavigator: React.FC = () => {
     return <LoadingSpinner />;
   }
 
+  // Determine initial route
+  const initialRouteName = hasSeenWelcome ? 'Landing' : 'Welcome';
+
   return (
     <NavigationContainer>
       <Stack.Navigator
+        initialRouteName={initialRouteName}
         screenOptions={{
           headerStyle: {
             backgroundColor: colors.surface,
@@ -36,13 +40,11 @@ export const AppNavigator: React.FC = () => {
         }}
       >
         {/* Welcome Screen - Show first time only */}
-        {!hasSeenWelcome ? (
-          <Stack.Screen
-            name="Welcome"
-            component={WelcomeScreen}
-            options={{ headerShown: false }}
-          />
-        ) : null}
+        <Stack.Screen
+          name="Welcome"
+          component={WelcomeScreen}
+          options={{ headerShown: false }}
+        />
 
         {/* Landing Screen - Main screen */}
         <Stack.Screen
