@@ -143,33 +143,29 @@ export const subscribeToTasks = (
   return db
     .collection('tasks')
     .where('userId', '==', userId)
-    .orderBy('createdAt', 'desc')
     .onSnapshot(
       snapshot => {
         const tasks = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         })) as Task[];
+        
+        // Sort tasks by createdAt on client side (newest first)
+        tasks.sort((a, b) => {
+          const aDate = a.createdAt instanceof Date 
+            ? a.createdAt 
+            : a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+          const bDate = b.createdAt instanceof Date 
+            ? b.createdAt 
+            : b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+          return bDate.getTime() - aDate.getTime();
+        });
+        
         callback(tasks);
       },
       error => {
         console.error('Error subscribing to tasks:', error);
-        // If orderBy fails, try without it
-        db
-          .collection('tasks')
-          .where('userId', '==', userId)
-          .onSnapshot(
-            snapshot => {
-              const tasks = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-              })) as Task[];
-              callback(tasks);
-            },
-            err => {
-              console.error('Error in fallback subscription:', err);
-            }
-          );
+        callback([]); // Return empty array on error
       }
     );
 };
