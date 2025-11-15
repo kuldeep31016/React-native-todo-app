@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 
 // Configure Google Sign-In
 GoogleSignin.configure({
-  webClientId: '', // Add your Web Client ID from Firebase Console
+  webClientId: "735114363694-tmqtbtj0rk43pinnv8h16v8o17jn0an0.apps.googleusercontent.com", // Add your Web Client ID from Firebase Console
   offlineAccess: true,
 });
 

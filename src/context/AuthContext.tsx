@@ -2,14 +2,18 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { signInWithGoogle, signOut, getCurrentUser, onAuthStateChanged } from '../services/auth';
 import { createUserProfile, getUserProfile } from '../services/firestore';
 import { UserProfile } from '../services/firestore';
+import { syncLocalTasksToFirebase } from '../utils/syncManager';
+import { loadLocalTasks } from '../services/localStorage';
 
 interface AuthContextType {
   user: any | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  isLocalMode: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  onSyncComplete?: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,10 +22,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<any | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLocalMode, setIsLocalMode] = useState(true);
+  const [syncCallback, setSyncCallback] = useState<(() => void) | undefined>();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(async (authUser) => {
       setUser(authUser);
+      setIsLocalMode(!authUser);
+      
       if (authUser) {
         try {
           let profile = await getUserProfile(authUser.uid);
@@ -50,7 +58,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const handleSignIn = async () => {
     try {
+      // Get local tasks before signing in
+      const localTasks = await loadLocalTasks();
+      
+      // Sign in with Google
       const result = await signInWithGoogle();
+      
       if (result.user) {
         const profile = {
           name: result.user.displayName || 'User',
@@ -60,6 +73,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         await createUserProfile(result.user.uid, profile);
         setUserProfile(profile);
+        setIsLocalMode(false);
+
+        // Sync local tasks to Firebase if any exist
+        if (localTasks.length > 0) {
+          try {
+            await syncLocalTasksToFirebase(result.user.uid, localTasks);
+            // Notify TaskContext to refresh
+            if (syncCallback) {
+              syncCallback();
+            }
+          } catch (error) {
+            console.error('Error syncing local tasks:', error);
+            // Don't throw - user is still signed in
+          }
+        }
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -72,6 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await signOut();
       setUser(null);
       setUserProfile(null);
+      setIsLocalMode(true);
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
@@ -98,9 +127,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         user,
         userProfile,
         loading,
+        isLocalMode,
         signIn: handleSignIn,
         signOut: handleSignOut,
         updateUserProfile,
+        onSyncComplete: (callback) => setSyncCallback(() => callback),
       }}
     >
       {children}
@@ -115,4 +146,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
