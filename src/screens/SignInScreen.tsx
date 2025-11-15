@@ -235,7 +235,7 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation, route })
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Icon name="google" size={24} color={colors.primary} />
+            <Icon name="login" size={24} color={colors.primary} />
             <Text style={[styles.googleButtonText, { color: colors.text }]}>Continue with Google</Text>
           </TouchableOpacity>
 

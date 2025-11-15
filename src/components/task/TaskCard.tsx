@@ -157,7 +157,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             onPress={onDelete}
             style={styles.deleteButton}
           >
-            <Icon name="delete-outline" size={20} color={colors.error} />
+            <Icon name="delete" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

@@ -272,7 +272,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation, route })
               disabled={loading}
               activeOpacity={0.8}
             >
-              <Icon name="google" size={24} color={colors.primary} />
+              <Icon name="person-add" size={24} color={colors.primary} />
             </TouchableOpacity>
           </View>
 

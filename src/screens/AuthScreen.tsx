@@ -69,7 +69,7 @@ export const AuthScreen: React.FC = () => {
             <ActivityIndicator color={colors.background} />
           ) : (
             <>
-              <Icon name="google" size={24} color={colors.background} />
+              <Icon name="login" size={24} color={colors.background} />
               <Text style={[styles.signInButtonText, { color: colors.background }]}>
                 Sign in with Google
               </Text>

@@ -73,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ visible, onClose }) => {
           {/* Content */}
           <View style={styles.content}>
             <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
-              <Icon name="cloud-sync" size={60} color={colors.primary} />
+              <Icon name="cloud" size={60} color={colors.primary} />
             </View>
 
             <Text style={[styles.heading, { color: colors.text }]}>
@@ -105,7 +105,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ visible, onClose }) => {
                 <ActivityIndicator color={colors.background} />
               ) : (
                 <>
-                  <Icon name="google" size={24} color={colors.background} />
+                  <Icon name="login" size={24} color={colors.background} />
                   <Text style={[styles.signInButtonText, { color: colors.background }]}>
                     Continue with Google
                   </Text>
